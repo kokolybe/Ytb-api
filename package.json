@@ -1,0 +1,18 @@
+{
+  "name": "rapidapi-proxy",
+  "version": "1.0.0",
+  "description": "Un serveur proxy pour interagir avec l'API de RapidAPI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.4"
+  },
+  "engines": {
+    "node": ">=16.x"
+  },
+  "keywords": [],
+  "author": "Koloina",
+  "license": "MIT"
+}
