@@ -72,6 +72,46 @@ app.get('/download', (req, res) => {
     });
 });
 
+app.get('/get-video-url', (req, res) => {
+    const videoId = req.query.id;
+
+    if (!videoId) {
+        return res.status(400).send({ error: 'Le paramètre "id" est requis.' });
+    }
+
+    const options = {
+        method: 'GET',
+        url: 'https://ytstream-download-youtube-videos.p.rapidapi.com/dl',
+        qs: { id: videoId },
+        headers: {
+            'x-rapidapi-key': 'VOTRE_CLE_RAPIDAPI',
+            'x-rapidapi-host': 'ytstream-download-youtube-videos.p.rapidapi.com',
+        },
+    };
+
+    request(options, (error, response, body) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send({ error: 'Erreur lors de l\'appel à l\'API.' });
+        }
+
+        try {
+            const data = JSON.parse(body);
+            const allFormats = [...data.formats, ...data.adaptiveFormats]; // Combiner formats
+            const desiredFormat = allFormats.find(format => format.itag === 248); // Trouver itag 248
+
+            if (desiredFormat) {
+                return res.status(200).send({ url: desiredFormat.url });
+            } else {
+                return res.status(404).send({ error: 'Format avec itag 248 introuvable.' });
+            }
+        } catch (parseError) {
+            console.error(parseError);
+            return res.status(500).send({ error: 'Erreur lors du traitement des données.' });
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
 });
