@@ -112,6 +112,48 @@ app.get('/get-video-url', (req, res) => {
     });
 });
 
+app.get('/music', (req, res) => {
+    const videoId = req.query.id;
+
+    if (!videoId) {
+        return res.status(400).send({ error: 'Le paramètre "id" est requis.' });
+    }
+
+    const options = {
+        method: 'GET',
+        url: 'https://ytstream-download-youtube-videos.p.rapidapi.com/dl',
+        qs: { id: videoId },
+        headers: {
+            'x-rapidapi-key': 'VOTRE_CLE_RAPIDAPI', // Remplacez par votre clé RapidAPI
+            'x-rapidapi-host': 'ytstream-download-youtube-videos.p.rapidapi.com',
+        },
+    };
+
+    // Appel à l'API RapidAPI
+    request(options, (error, response, body) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send({ error: 'Erreur lors de l\'appel à l\'API.' });
+        }
+
+        try {
+            const data = JSON.parse(body); // Analyse de la réponse JSON
+            const allFormats = [...data.formats, ...data.adaptiveFormats]; // Combiner les formats
+            const desiredFormat = allFormats.find(format => format.itag === 251); // Recherche de l'itag cible
+
+            if (desiredFormat) {
+                return res.status(200).send({ url: desiredFormat.url }); // Retourner l'URL trouvée
+            } else {
+                return res.status(404).send({ error: 'Format avec itag 248 introuvable.' }); // Aucun format trouvé
+            }
+        } catch (parseError) {
+            console.error(parseError);
+            return res.status(500).send({ error: 'Erreur lors du traitement des données.' }); // Erreur JSON
+        }
+    });
+});
+
+
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
 });
